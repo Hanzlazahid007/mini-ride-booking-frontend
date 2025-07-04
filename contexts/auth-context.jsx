@@ -1,71 +1,71 @@
-"use client"
+"use client";
 
-import { createContext, useContext, useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { authAPI } from "@/lib/api"
-import Cookies from "js-cookie"
+import { createContext, useContext, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { authAPI } from "@/lib/api";
+import Cookies from "js-cookie";
 
-const AuthContext = createContext({})
+const AuthContext = createContext({});
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const router = useRouter()
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
-    checkAuth()
-  }, [])
+    checkAuth();
+  }, []);
 
   const checkAuth = async () => {
     try {
-      const token = Cookies.get("token")  // ✅ Read from cookie
+      const token = Cookies.get("token"); // ✅ Read from cookie
 
       if (token) {
-        const userData = await authAPI.verifyToken(token)
-        setUser(userData)
+        const userData = await authAPI.verifyToken(token);
+        setUser(userData);
       } else {
-        router.push("/login")  // ⬅️ Optional: auto-redirect if no token
+        router.push("/login"); // ⬅️ Optional: auto-redirect if no token
       }
     } catch (error) {
-      Cookies.remove("token")  // ✅ Remove invalid cookie
-      setUser(null)
-      router.push("/login")     // ⬅️ Optional: redirect on invalid token
+      Cookies.remove("token"); // ✅ Remove invalid cookie
+      setUser(null);
+      router.push("/login"); // ⬅️ Optional: redirect on invalid token
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const login = async (email, password) => {
-    const response = await authAPI.login(email, password)
+    const response = await authAPI.login(email, password);
 
-    Cookies.set("token", response.token, { expires: 7, path: "/" })  // ✅ Store token in cookie
-    setUser(response.user)
+    Cookies.set("token", response.token, { expires: 7, path: "/" }); // ✅ Store token in cookie
+    setUser(response.user);
 
     if (response.user.userType === "rider") {
-      router.push("/rider")
+      router.push("/rider");
     } else {
-      router.push("/dashboard")
+      router.push("/dashboard");
     }
-  }
+  };
 
   const signup = async (userData) => {
-    const response = await authAPI.signup(userData)
+    const response = await authAPI.signup(userData);
 
-    Cookies.set("token", response.token, { expires: 7, path: "/" })  // ✅ Store token in cookie
-    setUser(response.user)
+    Cookies.set("token", response.token, { expires: 7, path: "/" }); // ✅ Store token in cookie
+    setUser(response.user);
 
     if (response.user.userType === "rider") {
-      router.push("/rider")
+      router.push("/rider");
     } else {
-      router.push("/dashboard")
+      router.push("/dashboard");
     }
-  }
+  };
 
   const logout = () => {
-    Cookies.remove("token", { path: "/" })  // ✅ Remove cookie
-    setUser(null)
-    router.push("/")
-  }
+    Cookies.remove("token", { path: "/" }); // ✅ Remove cookie
+    setUser(null);
+    router.push("/");
+  };
 
   return (
     <AuthContext.Provider
@@ -79,13 +79,13 @@ export function AuthProvider({ children }) {
     >
       {children}
     </AuthContext.Provider>
-  )
+  );
 }
 
 export const useAuth = () => {
-  const context = useContext(AuthContext)
+  const context = useContext(AuthContext);
   if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider")
+    throw new Error("useAuth must be used within an AuthProvider");
   }
-  return context
-}
+  return context;
+};
