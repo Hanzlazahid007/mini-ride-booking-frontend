@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { authAPI } from "@/lib/api"
+import Cookies from "js-cookie"
 
 const AuthContext = createContext({})
 
@@ -17,13 +18,18 @@ export function AuthProvider({ children }) {
 
   const checkAuth = async () => {
     try {
-      const token = localStorage.getItem("token")
+      const token = Cookies.get("token")  // ✅ Read from cookie
+
       if (token) {
         const userData = await authAPI.verifyToken(token)
         setUser(userData)
+      } else {
+        router.push("/login")  // ⬅️ Optional: auto-redirect if no token
       }
     } catch (error) {
-      localStorage.removeItem("token")
+      Cookies.remove("token")  // ✅ Remove invalid cookie
+      setUser(null)
+      router.push("/login")     // ⬅️ Optional: redirect on invalid token
     } finally {
       setLoading(false)
     }
@@ -31,7 +37,8 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password) => {
     const response = await authAPI.login(email, password)
-    localStorage.setItem("token", response.token)
+
+    Cookies.set("token", response.token, { expires: 7, path: "/" })  // ✅ Store token in cookie
     setUser(response.user)
 
     if (response.user.userType === "rider") {
@@ -43,7 +50,8 @@ export function AuthProvider({ children }) {
 
   const signup = async (userData) => {
     const response = await authAPI.signup(userData)
-    localStorage.setItem("token", response.token)
+
+    Cookies.set("token", response.token, { expires: 7, path: "/" })  // ✅ Store token in cookie
     setUser(response.user)
 
     if (response.user.userType === "rider") {
@@ -54,7 +62,7 @@ export function AuthProvider({ children }) {
   }
 
   const logout = () => {
-    localStorage.removeItem("token")
+    Cookies.remove("token", { path: "/" })  // ✅ Remove cookie
     setUser(null)
     router.push("/")
   }

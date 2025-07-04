@@ -8,7 +8,7 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata = {
   title: "RideBook - Your Reliable Ride Booking Service",
   description: "Book bikes, cars, and rickshaws with ease",
-    generator: 'v0.dev'
+   
 }
 
 export default function RootLayout({ children }) {
